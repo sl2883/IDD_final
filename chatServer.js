@@ -30,7 +30,7 @@ io.on('connect', function(socket) {
 	var questionNum = 0; // keep count of question, used for IF condition.
 	socket.on('loaded', function() { // we wait until the client has loaded and contacted us that it is ready to go.
 
-		socket.emit('answer', "Hey, hello I am a CalmBot."); //We start with the introduction;
+		socket.emit('answer', "Hey, I am a CalmBot.", ""); //We start with the introduction;
 		setTimeout(playMusic, 0, socket);
 		setTimeout(timedColor, 1000, socket, "blue");
 		setTimeout(timedAnswer, 2000, socket, "I can help you relax"); // Wait a moment and respond with a question.
@@ -50,6 +50,7 @@ io.on('connect', function(socket) {
 function bot(data, socket, questionNum) {
 	var input = data; // This is generally really terrible from a security point of view ToDo avoid code injection
 	var answer;
+	var answer2 = "";
 	var question;
 	var waitTime;
 	var timerTime = -1;
@@ -57,7 +58,8 @@ function bot(data, socket, questionNum) {
 	if (questionNum == 0) {
 
 		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Here are some benefits - Reduces stress, Controls anxiety, Promotes emotional health";
+			answer = "Here are some benefits";
+			answer2 = "Reduces stress, Controls anxiety, Promotes emotional health";
 			waitTime = 5000;
 			question = "Would you like to meditate now?"
 			ph = "Yes or No";
@@ -85,7 +87,9 @@ function bot(data, socket, questionNum) {
 	} else if (questionNum == 2) {
 
 		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Q: Why do mindfulness students love going to airports? A: Because they always get a free body scan!";
+			answer = "Q: Why do mindfulness students love going to airports?";
+			answer2 = "A: Because they always get a free body scan!";
+
 			waitTime = 5000;
 			question = "How long would you like to meditate now?";
 			ph = "1, 10, 20 (in mins)";
@@ -106,7 +110,8 @@ function bot(data, socket, questionNum) {
 	} else if (questionNum == 3) {
 
 		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Q: Why could the mindfulness teacher not decide which chocolate to buy? A: Because she was practising choiceless awareness.";
+			answer = "Q: Why could the mindfulness teacher not decide which chocolate to buy?";
+			answer2 = "A: Because she was practising choiceless awareness.";
 			waitTime = 5000;
 			question = "How long would you like to meditate now?";
 			ph = "1, 10, 20 (in mins)";
@@ -134,7 +139,7 @@ function bot(data, socket, questionNum) {
 	}
 	else {
 		/// We take the changed data and distribute it across the required objects.
-		socket.emit('answer', answer);
+		socket.emit('answer', answer, answer2);
 
 		setTimeout(timedQuestion, waitTime, socket, question, ph);
 	}
@@ -142,12 +147,11 @@ function bot(data, socket, questionNum) {
 }
 
 function startTimer(socket, dur) {
-	setTimeout(timedAnswer, 5000, "Close your eyes and focus on your breathing. Open your eyes when I beep.");
-	for (i = 0; i<5+dur*60; i++ ) {
-		setTimeout(timedAnswer, i*1000 , socket, (dur*60 - i) + "");
-
+	setTimeout(timedAnswer, 5000, socket, "Close your eyes and focus on your breathing","Open your eyes when I beep.");
+	for (i = 0; i<dur*60; i++ ) {
+		setTimeout(timedAnswer, i*1000 + 5000 , socket, "Breath in, Breath out", (dur*60 - i) + "");
 	}
-	setTimeout(timedAnswer, 5000+dur*60000 , socket, "and we are done");
+	setTimeout(timedAnswer, 5000+dur*60000 , socket, "and we are done", "Bye");
 	setTimeout(playMusic, 5000+dur*60000 , socket);
 
 }
@@ -164,9 +168,9 @@ function timedColor(socket, color) {
 	}
 }
 
-function timedAnswer(socket, answer) {
+function timedAnswer(socket, answer, answer2) {
 	if (answer != '') {
-		socket.emit('answer', answer);
+		socket.emit('answer', answer, answer2);
 	}
 	else {
 	}

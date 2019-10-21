@@ -3,7 +3,7 @@ var socket = io();
 var questionRecieved = false;
 // keep count of question, used for IF condition.
 var output = document.getElementById('output'); // store id="output" in output variable
-output.innerHTML = "<h1 id=response> </h1>"; // ouput first question
+output.innerHTML = "<h1 id=response> </h1><h2 id=response2></h2>"; // ouput first question
 
 function sendMessage() {
   var input = document.getElementById("input").value;
@@ -24,14 +24,21 @@ function playMusic() {
 	document.getElementById('music').play();
 }
 
+
 function changeText(input) {
   document.getElementById('response').textContent = input;
+  document.getElementById('response2').textContent = "";
+}
+function changeText2(input, input2) {
+  document.getElementById('response').textContent = input;
+  document.getElementById('response2').textContent = input2;
 }
 
-socket.on('answer', function(msg) {
-  console.log('Incomming answer:', msg);
-  changeText(msg);
+socket.on('answer', function(msg, msg2) {
+  console.log('Incomming answer:', msg + " " + msg2);
+  changeText2(msg, msg2);
 });
+
 socket.on('question', function(msg, ph) {
   console.log('Incomming Question:', msg);
   questionRecieved = true;
