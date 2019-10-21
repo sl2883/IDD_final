@@ -17,7 +17,7 @@ app.use(express.static('public')); // find pages in public directory
 
 // start the server and say what port it is on
 http.listen(serverPort, function() {
-  console.log('listening on *:%s', serverPort);
+	console.log('listening on *:%s', serverPort);
 });
 //----------------------------------------------------------------------------//
 
@@ -26,84 +26,159 @@ http.listen(serverPort, function() {
 // this is the websocket event handler and say if someone connects
 // as long as someone is connected, listen for messages
 io.on('connect', function(socket) {
-  console.log('a new user connected');
-  var questionNum = 0; // keep count of question, used for IF condition.
-  socket.on('loaded', function() { // we wait until the client has loaded and contacted us that it is ready to go.
+	console.log('a new user connected');
+	var questionNum = 0; // keep count of question, used for IF condition.
+	socket.on('loaded', function() { // we wait until the client has loaded and contacted us that it is ready to go.
 
-    socket.emit('answer', "Hey, hello I am \"___*-\" a simple chat bot example."); //We start with the introduction;
-    setTimeout(timedQuestion, 5000, socket, "What is your name?"); // Wait a moment and respond with a question.
-
-  });
-  socket.on('message', (data) => { // If we get a new message from the client we process it;
-    console.log(data);
-    questionNum = bot(data, socket, questionNum); // run the bot function with the new message
-  });
-  socket.on('disconnect', function() { // This function  gets called when the browser window gets closed
-    console.log('user disconnected');
-  });
+		socket.emit('answer', "Hey, hello I am a CalmBot."); //We start with the introduction;
+		setTimeout(playMusic, 0, socket);
+		setTimeout(timedColor, 1000, socket, "blue");
+		setTimeout(timedAnswer, 2000, socket, "I can help you relax"); // Wait a moment and respond with a question.
+		setTimeout(timedColor, 3000, socket, "yellow");
+		setTimeout(timedQuestion, 4000, socket, "Would you like to know more benefits?", "Yes or No"); // Wait a moment and respond with a question.
+	});
+	socket.on('message', (data) => { // If we get a new message from the client we process it;
+		console.log(data);
+		questionNum = bot(data, socket, questionNum); // run the bot function with the new message
+	});
+	socket.on('disconnect', function() { // This function  gets called when the browser window gets closed
+		console.log('user disconnected');
+	});
 });
+
 //--------------------------CHAT BOT FUNCTION-------------------------------//
 function bot(data, socket, questionNum) {
-  var input = data; // This is generally really terrible from a security point of view ToDo avoid code injection
-  var answer;
-  var question;
-  var waitTime;
+	var input = data; // This is generally really terrible from a security point of view ToDo avoid code injection
+	var answer;
+	var question;
+	var waitTime;
+	var timerTime = -1;
+	/// These are the main statments that make up the conversation.
+	if (questionNum == 0) {
 
-  /// These are the main statments that make up the conversation.
-  if (questionNum == 0) {
-    answer = 'Hello ' + input + ' :-)'; // output response
-    waitTime = 5000;
-    question = 'How old are you?'; // load next question
-  } else if (questionNum == 1) {
-    answer = 'Really, ' + input + ' years old? So that means you were born in: ' + (2018 - parseInt(input)); // output response
-    waitTime = 5000;
-    question = 'Where do you live?'; // load next question
-  } else if (questionNum == 2) {
-    answer = 'Cool! I have never been to ' + input + '.';
-    waitTime = 5000;
-    question = 'Whats your favorite color?'; // load next question
-  } else if (questionNum == 3) {
-    answer = 'Ok, ' + input + ' it is.';
-    socket.emit('changeBG', input.toLowerCase());
-    waitTime = 5000;
-    question = 'Can you still read the font?'; // load next question
-  } else if (questionNum == 4) {
-    if (input.toLowerCase() === 'yes' || input === 1) {
-      answer = 'Perfect!';
-      waitTime = 5000;
-      question = 'Whats your favorite place?';
-    } else if (input.toLowerCase() === 'no' || input === 0) {
-      socket.emit('changeFont', 'white'); /// we really should look up the inverse of what we said befor.
-      answer = ''
-      question = 'How about now?';
-      waitTime = 0;
-      questionNum--; // Here we go back in the question number this can end up in a loop
-    } else {
-      question = 'Can you still read the font?'; // load next question
-      answer = 'I did not understand you. Could you please answer "yes" or "no"?'
-      questionNum--;
-      waitTime = 5000;
-    }
-    // load next question
-  } else {
-    answer = 'I have nothing more to say!'; // output response
-    waitTime = 0;
-    question = '';
-  }
+		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
+			answer = "Here are some benefits - Reduces stress, Controls anxiety, Promotes emotional health";
+			waitTime = 5000;
+			question = "Would you like to meditate now?"
+			ph = "Yes or No";
+		}
+		else {
+			answer = "Aww. I am sad.";
+			waitTime = 2000;
+			question = "Would you like to meditate?";
+			ph = "Yes or No";
+		}
+	} else if (questionNum == 1) {
+		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
+			answer = "Very well.";
+			waitTime = 2000;
+			question = "How long would you like to meditate?";
+			ph = "1, 10, 20 (in mins)";
+		}
+		else {
+			answer = "Aww. I am sad, again.";
+			waitTime = 2000;
+			question = "Would you like to read a joke?";
 
+			ph = "Yes or No";
+		}
+	} else if (questionNum == 2) {
 
-  /// We take the changed data and distribute it across the required objects.
-  socket.emit('answer', answer);
-  setTimeout(timedQuestion, waitTime, socket, question);
-  return (questionNum + 1);
+		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
+			answer = "Q: Why do mindfulness students love going to airports? A: Because they always get a free body scan!";
+			waitTime = 5000;
+			question = "How long would you like to meditate now?";
+			ph = "1, 10, 20 (in mins)";
+		}
+		else if(input == "1") {
+			timerTime = 1;
+		}
+		else if(input == "10") {
+			timerTime = 10;
+		}
+		else {
+			answer = "Aww. I am sad, again.";
+			waitTime = 2000;
+			question = "Would you like to read another joke?";
+
+			ph = "Yes or No";
+		}
+	} else if (questionNum == 3) {
+
+		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
+			answer = "Q: Why could the mindfulness teacher not decide which chocolate to buy? A: Because she was practising choiceless awareness.";
+			waitTime = 5000;
+			question = "How long would you like to meditate now?";
+			ph = "1, 10, 20 (in mins)";
+		}
+		else if(input == "1") {
+			timerTime = 1;
+		}
+		else if(input == "10") {
+			timerTime = 10;
+		}
+		else {
+			answer = "Aww. I have nothing more to say!";
+			waitTime = 0;
+			question = ""; 
+		}
+		// load next question
+	} else {
+		answer = 'I have nothing more to say!'; // output response
+		waitTime = 0;
+		question = '';
+	}
+
+	if(timerTime != -1) {
+		startTimer(socket, timerTime);
+	}
+	else {
+		/// We take the changed data and distribute it across the required objects.
+		socket.emit('answer', answer);
+
+		setTimeout(timedQuestion, waitTime, socket, question, ph);
+	}
+	return (questionNum + 1);
 }
 
-function timedQuestion(socket, question) {
-  if (question != '') {
-    socket.emit('question', question);
-  } else {
-    //console.log('No Question send!');
-  }
+function startTimer(socket, dur) {
+	setTimeout(timedAnswer, 5000, "Close your eyes and focus on your breathing. Open your eyes when I beep.");
+	for (i = 0; i<5+dur*60; i++ ) {
+		setTimeout(timedAnswer, i*1000 , socket, (dur*60 - i) + "");
+
+	}
+	setTimeout(timedAnswer, 5000+dur*60000 , socket, "and we are done");
+	setTimeout(playMusic, 5000+dur*60000 , socket);
+
+}
+
+function playMusic(socket) {
+	socket.emit('playMusic');
+}
+
+function timedColor(socket, color) {
+	if (color != '') {
+		socket.emit('changeBG', color);
+	}
+	else {
+	}
+}
+
+function timedAnswer(socket, answer) {
+	if (answer != '') {
+		socket.emit('answer', answer);
+	}
+	else {
+	}
+}
+
+function timedQuestion(socket, question, ph) {
+	if (question != '') {
+		socket.emit('question', question, ph);
+		socket.emit('playMusic');
+	} else {
+		//console.log('No Question send!');
+	}
 
 }
 //----------------------------------------------------------------------------//

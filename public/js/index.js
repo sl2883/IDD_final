@@ -20,6 +20,10 @@ $(document).keypress(function(e) {
   }
 });
 
+function playMusic() {
+	document.getElementById('music').play();
+}
+
 function changeText(input) {
   document.getElementById('response').textContent = input;
 }
@@ -28,11 +32,19 @@ socket.on('answer', function(msg) {
   console.log('Incomming answer:', msg);
   changeText(msg);
 });
-socket.on('question', function(msg) {
+socket.on('question', function(msg, ph) {
   console.log('Incomming Question:', msg);
   questionRecieved = true;
+	
   document.getElementById("input").style.display = "block";
-  changeText(msg);
+  document.getElementById("input").placeholder = ph;
+  
+	changeText(msg);
+});
+
+socket.on('playMusic', function(msg) {
+	console.log('Playing music');
+	playMusic();
 });
 
 socket.on('changeBG', function(msg) {
