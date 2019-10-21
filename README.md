@@ -1,18 +1,16 @@
-# ChatBot
+# Calm Bot
 
-*A lab report by John Q. Student*
+The chatbot that I've created is Calmbot. It talks the user into meditation. Following were the changes made = 
 
-## In this Report
-
-To submit your lab, fork [this repository](https://github.com/FAR-Lab/IDD-Fa18-Lab6). You'll need to upload any code you change into your fork, as well as upload a video of a friend or classmate using your chatbot.
-
-## Make the ChatBot your own
-
-**Describe what changes you made to the baseline chatbot here. Don't forget to push your modified code to this repository.**
+1. Added background of a calm enviroment
+2. Added beep sound for questions and to draw attention when the meditation is done.
+3. Modified the text input to have placeholders
+4. Modified the appearance to contrast with the background image
+5. Modified the bot state to correspond to a calm person talking to you
+6. Added benefits description & jokes nudgets to pursuade user to meditate.
 
 ## Record someone trying out your ChatBot
 
 **Using a phone or other video device, record someone trying out your ChatBot. Upload that video to this repository and link to it here!**
 
 ---
-Starter code by [David Goedicke](mailto:da.goedicke@gmail.com), closely based on work by [Nikolas Martelaro](mailto:nmartelaro@gmail.com) and [Captain Anonymous](https://codepen.io/anon/pen/PEVYXz), who forked original work by [Ian Tairea](https://codepen.io/mrtairea/pen/yJapwv).
