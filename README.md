@@ -10,7 +10,6 @@ The chatbot that I've created is Calmbot. It talks the user into meditation. Fol
 6. Added benefits description & jokes nudgets to pursuade user to meditate.
 
 ## Record someone trying out your ChatBot
-
-**Using a phone or other video device, record someone trying out your ChatBot. Upload that video to this repository and link to it here!**
-
----
+It's a calm box that inspires you to meditate. Had to break the video into 2 because the subject started meditating for a minute!
+[Video 1](https://youtu.be/APW8y2bk1g0)
+[Video 2](https://youtu.be/n7oNXQzefwM)
