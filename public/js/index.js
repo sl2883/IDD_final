@@ -61,10 +61,17 @@ socket.on('userName', function(msg) { // We let the server know that we are up a
 
 socket.on('game_updated', function (game, currentX, currentY, board_width) {
   for (var i = 0; i < game.length; i++) {
-    document.getElementById("b"+(i+1).toString()).innerText =
+    var elem = document.getElementById("b"+(i+1).toString());
+    elem.innerText =
         (game[i] == 1)?"X":
             (game[i] == -1)?"0":
                 ((currentY*board_width + currentX) == i)?"_":" ";
+
+    var newStyle =
+        (game[i] == 1)?"color:red":
+            (game[i] == -1)?"color:orange":
+                ((currentY*board_width + currentX) == i)?"color:black":" ";
+    elem.setAttribute("style", newStyle);
   }
 });
 
