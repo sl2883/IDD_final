@@ -7,9 +7,46 @@ Closley based on work from Nikolas Martelaro (nmartelaro@gmail.com) as well as C
 var express = require('express'); // web server application
 var app = express(); // webapp
 var http = require('http').Server(app); // connects http library to server
-var io = require('socket.io')(http); // connect websocket library to server
-var serverPort = 8000;
 
+var SerialPort = require('serialport');
+var Readline = SerialPort.parsers.Readline; // read serial data as lines
+
+var io = require('socket.io')(http); // connect websocket library to server
+
+// check to make sure that the user provides the serial port for the Arduino
+// when running the server
+if (!process.argv[2]) {
+	console.error('Usage: node ' + process.argv[1] + ' SERIAL_PORT');
+	process.exit(1);
+}
+
+var serverPort = 8000;
+current = 0;
+var gameState = 0;
+var game = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+var currentX = 0;
+var currentY = 0;
+var BOARD_WIDTH = 3;
+var BOARD_HEIGHT = 3;
+var currentCross = true;
+
+//---------------------- SERIAL COMMUNICATION (Arduino) ----------------------//
+// start the serial port connection and read on newlines
+const serial = new SerialPort(process.argv[2], {});
+const parser = new Readline({
+	delimiter: '\r\n'
+});
+
+// Read data that is available on the serial port and send it to the websocket
+serial.pipe(parser);
+parser.on('data', function(data) {
+	console.log('Data:', data);
+	io.emit('server-msg', data);
+	if(data == "light") {
+
+		console.log('ledON');
+	}
+});
 
 //---------------------- WEBAPP SERVER SETUP ---------------------------------//
 // use express to create the simple webapp
@@ -27,162 +64,177 @@ http.listen(serverPort, function() {
 // as long as someone is connected, listen for messages
 io.on('connect', function(socket) {
 	console.log('a new user connected');
-	var questionNum = 0; // keep count of question, used for IF condition.
+	console.log(current + 1);
+	// var questionNum = 0; // keep count of question, used for IF condition.
 	socket.on('loaded', function() { // we wait until the client has loaded and contacted us that it is ready to go.
+		// setTimeout(playMusic, 0, socket);
+		// socket.emit('turn_changed', "your turn");
+		socket.username = current++;
+		socket.emit("userName", socket.username);
+		printGame();
+	});
 
-		socket.emit('answer', "Hey, I am a CalmBot.", ""); //We start with the introduction;
-		setTimeout(playMusic, 0, socket);
-		setTimeout(timedColor, 1000, socket, "blue");
-		setTimeout(timedAnswer, 2000, socket, "I can help you relax"); // Wait a moment and respond with a question.
-		setTimeout(timedColor, 3000, socket, "yellow");
-		setTimeout(timedQuestion, 4000, socket, "Would you like to know more benefits?", "Yes or No"); // Wait a moment and respond with a question.
+	socket.on('key_pressed', (data) => { // If we get a new message from the client we process it;
+		console.log(data + " " + socket.username);
+		action(data, socket); // run the bot function with the new message
 	});
-	socket.on('message', (data) => { // If we get a new message from the client we process it;
-		console.log(data);
-		questionNum = bot(data, socket, questionNum); // run the bot function with the new message
-	});
+
 	socket.on('disconnect', function() { // This function  gets called when the browser window gets closed
 		console.log('user disconnected');
+		current--;
 	});
 });
 
-//--------------------------CHAT BOT FUNCTION-------------------------------//
-function bot(data, socket, questionNum) {
-	var input = data; // This is generally really terrible from a security point of view ToDo avoid code injection
-	var answer;
-	var answer2 = "";
-	var question;
-	var waitTime;
-	var timerTime = -1;
-	/// These are the main statments that make up the conversation.
-	if (questionNum == 0) {
-
-		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Here are some benefits";
-			answer2 = "Reduces stress, Controls anxiety, Promotes emotional health";
-			waitTime = 5000;
-			question = "Would you like to meditate now?"
-			ph = "Yes or No";
-		}
-		else {
-			answer = "Aww. I am sad.";
-			waitTime = 2000;
-			question = "Would you like to meditate?";
-			ph = "Yes or No";
-		}
-	} else if (questionNum == 1) {
-		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Very well.";
-			waitTime = 2000;
-			question = "How long would you like to meditate?";
-			ph = "1, 10, 20 (in mins)";
-		}
-		else {
-			answer = "Aww. I am sad, again.";
-			waitTime = 2000;
-			question = "Would you like to read a joke?";
-
-			ph = "Yes or No";
-		}
-	} else if (questionNum == 2) {
-
-		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Q: Why do mindfulness students love going to airports?";
-			answer2 = "A: Because they always get a free body scan!";
-
-			waitTime = 5000;
-			question = "How long would you like to meditate now?";
-			ph = "1, 10, 20 (in mins)";
-		}
-		else if(input == "1") {
-			timerTime = 1;
-		}
-		else if(input == "10") {
-			timerTime = 10;
-		}
-		else {
-			answer = "Aww. I am sad, again.";
-			waitTime = 2000;
-			question = "Would you like to read another joke?";
-
-			ph = "Yes or No";
-		}
-	} else if (questionNum == 3) {
-
-		if(input == "Yes" || input == "yes" || input == "y" || input == "Y") {
-			answer = "Q: Why could the mindfulness teacher not decide which chocolate to buy?";
-			answer2 = "A: Because she was practising choiceless awareness.";
-			waitTime = 5000;
-			question = "How long would you like to meditate now?";
-			ph = "1, 10, 20 (in mins)";
-		}
-		else if(input == "1") {
-			timerTime = 1;
-		}
-		else if(input == "10") {
-			timerTime = 10;
-		}
-		else {
-			answer = "Aww. I have nothing more to say!";
-			waitTime = 0;
-			question = ""; 
-		}
-		// load next question
-	} else {
-		answer = 'I have nothing more to say!'; // output response
-		waitTime = 0;
-		question = '';
-	}
-
-	if(timerTime != -1) {
-		startTimer(socket, timerTime);
+function action(data, socket) {
+	if (data == "play") {
+		ticTak(data, socket);
+		var next = socket.id;
+		io.sockets.emit("turn_changed", next) ;
 	}
 	else {
-		/// We take the changed data and distribute it across the required objects.
-		socket.emit('answer', answer, answer2);
-
-		setTimeout(timedQuestion, waitTime, socket, question, ph);
+		updateCurrentPos(data, socket);
 	}
-	return (questionNum + 1);
 }
 
-function startTimer(socket, dur) {
-	setTimeout(timedAnswer, 5000, socket, "Close your eyes and focus on your breathing","Open your eyes when I beep.");
-	for (i = 0; i<dur*60; i++ ) {
-		setTimeout(timedAnswer, i*1000 + 5000 , socket, "Breath in, Breath out", (dur*60 - i) + "");
+function ticTak(data, socket) {
+	//updateCurrentPos(data, socket);
+
+	if (currentCross) 	game[currentY * BOARD_HEIGHT + currentX] = 1;
+	else 				game[currentY * BOARD_HEIGHT + currentX] = -1;
+
+	currentCross = !currentCross;
+	checkGame(socket);
+	printGame();
+}
+
+function nextPlayable() {
+	var i = currentY * BOARD_HEIGHT + currentX;
+	while (game[i] != 0) {
+		i++;
+
+		i = i % (BOARD_HEIGHT * BOARD_WIDTH);
+
+		currentX = i % BOARD_WIDTH;
+		currentY = Math.floor(i / BOARD_HEIGHT);
 	}
-	setTimeout(timedAnswer, 5000+dur*60000 , socket, "and we are done", "Bye");
-	setTimeout(playMusic, 5000+dur*60000 , socket);
+}
+
+function updateCurrentPos(data, socket) {
+
+	switch (data) {
+		case "up":
+			currentY = (currentY - 1) % BOARD_HEIGHT;
+			break;
+		case "down":
+			currentY = (currentY + 1) % BOARD_HEIGHT;
+			break;
+		case "left":
+			currentX = (currentX - 1) % BOARD_WIDTH;
+			break;
+		case "right":
+			currentX = (currentX + 1) % BOARD_WIDTH;
+			break;
+	}
+
+	if (currentX < 0) currentX = currentX + BOARD_WIDTH;
+	if (currentY < 0) currentY = currentY + BOARD_HEIGHT;
+
+	for(var i = currentY; i < BOARD_HEIGHT + currentY; i++) {
+		for (var j = currentX; j < BOARD_WIDTH + currentX; j++) {
+
+			i = i % BOARD_WIDTH;
+			j = j % BOARD_HEIGHT;
+
+			if (game[i * BOARD_HEIGHT + j] == 0) {
+				currentX = j;
+				currentY = i;
+
+				i = BOARD_HEIGHT + currentY;
+				j = BOARD_WIDTH + currentX;
+			}
+		}
+	}
+
+	console.log("X: " + currentX + " Y: " + currentY);
+
+	printGame();
 
 }
 
-function playMusic(socket) {
-	socket.emit('playMusic');
-}
+function checkGame(socket) {
+	var gameCount = 0;
+	for(var i = 0; i < 9; i++) {
+		if(game[i] != 0) gameCount++;
+	}
 
-function timedColor(socket, color) {
-	if (color != '') {
-		socket.emit('changeBG', color);
+	if(checkAllRows() || checkAllColumns() || checkAllDiagonals())
+	{
+		socket.emit("won", socket.username);
+		resetGame();
+		return;
+	}
+
+	if (gameCount == 9) {
+		resetGame();
 	}
 	else {
-	}
-}
-
-function timedAnswer(socket, answer, answer2) {
-	if (answer != '') {
-		socket.emit('answer', answer, answer2);
-	}
-	else {
-	}
-}
-
-function timedQuestion(socket, question, ph) {
-	if (question != '') {
-		socket.emit('question', question, ph);
-		socket.emit('playMusic');
-	} else {
-		//console.log('No Question send!');
+		nextPlayable();
 	}
 
+	printGame();
 }
-//----------------------------------------------------------------------------//
+
+function checkAllRows() {
+	var ret = false;
+
+	if(	(game[0] != 0 && (game[0] == game[1] && game[1]== game[2]))
+		|| ((game[3] != 0) && (game[3] == game[4] && game[4]== game[5]))
+		|| ((game[6] != 0) && (game[6] == game[7] && game[7]== game[8]))) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+function checkAllColumns() {
+
+	var ret = false;
+
+	if(	(game[0] != 0 && (game[0] == game[3] && game[3]== game[6]))
+		|| (game[1] != 0 && (game[1] == game[4] && game[4]== game[7]))
+		|| (game[2] != 0 && (game[2] == game[5] && game[5]== game[8]))) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+function checkAllDiagonals() {
+
+	var ret = false;
+
+	if(	(game[0] != 0 && (game[0] == game[4] && game[4]== game[8]))
+		|| (game[2] != 0 && (game[2] == game[4] && game[4]== game[6]))) {
+		ret = true;
+	}
+
+	return ret;
+}
+
+function resetGame() {
+	currentX = 0;
+	currentY = 0;
+
+	game = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+}
+
+function printGame() {
+	io.sockets.emit("game_updated", game, currentX, currentY, BOARD_WIDTH);
+	var game_temp = [];
+	for(i = 0; i < game.length; i++) {
+		if(game[i] == -1) game_temp[i] = 2;
+		else game_temp[i] = game[i];
+	}
+
+	serial.write(game_temp.toString() + "\n");
+}

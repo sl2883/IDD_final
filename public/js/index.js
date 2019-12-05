@@ -1,73 +1,94 @@
 // WebSocket connection setup
 var socket = io();
-var questionRecieved = false;
-// keep count of question, used for IF condition.
-var output = document.getElementById('output'); // store id="output" in output variable
-output.innerHTML = "<h1 id=response> </h1><h2 id=response2></h2>"; // ouput first question
 
-function sendMessage() {
-  var input = document.getElementById("input").value;
-  socket.emit('message', input);
-  document.getElementById("input").value = "";
-  document.getElementById("input").style.display = "none";
+document.getElementById('up').onclick = function () {
+  console.log('up pressed');
+  socket.emit('key_pressed', 'up');
 }
 
-//push enter key (using jquery), to run bot function.
-$(document).keypress(function(e) {
-  if (e.which == 13 && questionRecieved === true) {
-    questionRecieved = false;
-    sendMessage(); // run bot function when enter key pressed
+document.getElementById('down').onclick = function () {
+  console.log('down pressed');
+  socket.emit('key_pressed', 'down');
+};
+
+document.getElementById('left').onclick = function () {
+  console.log('left pressed');
+  socket.emit('key_pressed', 'left');
+};
+
+document.getElementById('right').onclick = function () {
+  console.log('right pressed');
+  socket.emit('key_pressed', 'right');
+};
+
+document.getElementById('play').onclick = function () {
+  console.log('play pressed');
+  socket.emit('key_pressed', 'play');
+
+};
+
+socket.on('turn_changed', function (msg) {
+  console.log('turn changed');
+
+  if (msg != socket.id) {
+    document.getElementById('up').disabled = false;
+    document.getElementById('down').disabled = false;
+    document.getElementById('right').disabled = false;
+    document.getElementById('left').disabled = false;
+    document.getElementById('play').disabled = false;
+  }
+  else {
+    document.getElementById('up').disabled = true;
+    document.getElementById('down').disabled = true;
+    document.getElementById('left').disabled = true;
+    document.getElementById('right').disabled = true;
+    document.getElementById('play').disabled = true;
+  }
+
+});
+
+socket.on('connect', function() { // We let the server know that we are up and running also from the client side;
+  socket.emit('loaded');
+});
+
+socket.on('disconnect', function() { // We let the server know that we are up and running also from the client side;
+  socket.emit('disconnected');
+});
+
+socket.on('userName', function(msg) { // We let the server know that we are up and running also from the client side;
+  socket.username = msg;
+});
+
+socket.on('game_updated', function (game, currentX, currentY, board_width) {
+  for (var i = 0; i < game.length; i++) {
+    document.getElementById("b"+(i+1).toString()).innerText =
+        (game[i] == 1)?"X":
+            (game[i] == -1)?"0":
+                ((currentY*board_width + currentX) == i)?"_":" ";
   }
 });
 
-function playMusic() {
-	document.getElementById('music').play();
+socket.on('won', function(msg) { // We let the server know that we are up and running also from the client side;
+  if(socket.username == msg) {
+    alert("You won!");
+  }
+});
+
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    /* Toggle between adding and removing the "active" class,
+    to highlight the button that controls the panel */
+    this.classList.toggle("active");
+
+    /* Toggle between hiding and showing the active panel */
+    var panel = this.nextElementSibling;
+    if (panel.style.display === "block") {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "block";
+    }
+  });
 }
-
-
-function changeText(input) {
-  document.getElementById('response').textContent = input;
-  document.getElementById('response2').textContent = "";
-}
-function changeText2(input, input2) {
-  document.getElementById('response').textContent = input;
-  document.getElementById('response2').textContent = input2;
-}
-
-socket.on('answer', function(msg, msg2) {
-  console.log('Incomming answer:', msg + " " + msg2);
-  changeText2(msg, msg2);
-});
-
-socket.on('question', function(msg, ph) {
-  console.log('Incomming Question:', msg);
-  questionRecieved = true;
-	
-  document.getElementById("input").style.display = "block";
-  document.getElementById("input").placeholder = ph;
-  
-	changeText(msg);
-});
-
-socket.on('playMusic', function(msg) {
-	console.log('Playing music');
-	playMusic();
-});
-
-socket.on('changeBG', function(msg) {
-  console.log('Changeing backgroundColor to:', msg);
-  document.body.style.backgroundColor = msg;
-});
-
-socket.on('changeFont', function(msg) {
-  console.log('Changeing Font to:', msg);
-  var h1 = document.getElementById('response');
-  h1.style.color = 'white';
-
-
-  //document.body.style.backgroundColor = msg;
-});
-socket.on('connect', function() { // We let the server know that we are up and running also from the client side;
-  socket.emit('loaded');
-  document.getElementById("input").style.display = "none"; // Here we wait for the first question to appear
-});

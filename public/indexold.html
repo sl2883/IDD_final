@@ -1,9 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en" >
 
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Calm bot</title>
 
 	<script src="/socket.io/socket.io.js"></script>
@@ -15,35 +15,25 @@
 <body id="body">
 
 <div class="grid-container">
-	<div class="grid-item-toolbar">
-		<div class="left">
-			<img src="logo.png">
-		</div>
-	</div>
+	<div class="item1 main"></div>
 	<div class="grid-item"></div>
 	<div class="grid-item"><button id="up" class="button_up" type="button"></button></div>
 	<div class="grid-item"></div>
 	<div class="grid-item"><button id="left" class="button_left" type="button"></button></div>
-	<div class="grid-item"><button id="play" class="play" type="button">GO</button></div>
+	<div class="grid-item"><button id="play" class="play" type="button">PLAY</button></div>
 	<div class="grid-item"><button id="right" class="button_right" type="button"></button></div>
 	<div class="grid-item"></div>
 	<div class="grid-item"><button id="down" class="button_down" type="button"></button></div>
 	<div class="grid-item"></div>
-	<div class="grid-item"></div>
-	<button class="accordion grid-item-toolbar">SHOW BOARD</button>
-	<div class="panel grid-item-board">
-		<div class="grid-container_board">
-			<div class="grid-item" id="b1">1</div>
-			<div class="grid-item" id="b2">2</div>
-			<div class="grid-item" id="b3">3</div>
-			<div class="grid-item" id="b4">4</div>
-			<div class="grid-item" id="b5">5</div>
-			<div class="grid-item" id="b6">6</div>
-			<div class="grid-item" id="b7">7</div>
-			<div class="grid-item" id="b8">8</div>
-			<div class="grid-item" id="b9">9</div>
-		</div>
-	</div>
+	<div class="grid-item" id="b1">1</div>
+	<div class="grid-item" id="b2">2</div>
+	<div class="grid-item" id="b3">3</div>
+	<div class="grid-item" id="b4">4</div>
+	<div class="grid-item" id="b5">5</div>
+	<div class="grid-item" id="b6">6</div>
+	<div class="grid-item" id="b7">7</div>
+	<div class="grid-item" id="b8">8</div>
+	<div class="grid-item" id="b9">9</div>
 </div>
 
 <audio id="music"><source src="your-turn.mp3" type="audio/mpeg" /></audio>
