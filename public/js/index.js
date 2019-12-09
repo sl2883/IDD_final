@@ -27,15 +27,30 @@ document.getElementById('play').onclick = function () {
 
 };
 
+document.getElementById('reset').onclick = function () {
+  console.log('reset pressed');
+  socket.emit('reset_pressed', 'reset');
+
+};
+
 socket.on('turn_changed', function (msg) {
   console.log('turn changed');
 
-  if (msg != socket.id) {
+  if (msg.next != socket.id) {
     document.getElementById('up').disabled = false;
     document.getElementById('down').disabled = false;
     document.getElementById('right').disabled = false;
     document.getElementById('left').disabled = false;
     document.getElementById('play').disabled = false;
+    document.getElementById("turn").innerText = "Your turn";
+    document.getElementById("turn").setAttribute("style", "color:green");
+
+    if (msg.currentCross == true) {
+      document.getElementById("type").innerText = "X";
+    }
+    else {
+      document.getElementById("type").innerText = "O";
+    }
   }
   else {
     document.getElementById('up').disabled = true;
@@ -43,6 +58,17 @@ socket.on('turn_changed', function (msg) {
     document.getElementById('left').disabled = true;
     document.getElementById('right').disabled = true;
     document.getElementById('play').disabled = true;
+
+    document.getElementById("turn").innerText = "Others turn";
+    document.getElementById("turn").setAttribute("style", "color:red");
+
+
+    if (msg.currentCross == true) {
+      document.getElementById("type").innerText = "O";
+    }
+    else {
+      document.getElementById("type").innerText = "X";
+    }
   }
 
 });
@@ -64,7 +90,7 @@ socket.on('game_updated', function (game, currentX, currentY, board_width) {
     var elem = document.getElementById("b"+(i+1).toString());
     elem.innerText =
         (game[i] == 1)?"X":
-            (game[i] == -1)?"0":
+            (game[i] == -1)?"O":
                 ((currentY*board_width + currentX) == i)?"_":" ";
 
     var newStyle =

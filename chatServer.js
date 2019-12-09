@@ -8,6 +8,8 @@ var express = require('express'); // web server application
 var app = express(); // webapp
 var http = require('http').Server(app); // connects http library to server
 
+var USE_SERIAL = false;
+
 var SerialPort = require('serialport');
 var Readline = SerialPort.parsers.Readline; // read serial data as lines
 
@@ -15,9 +17,11 @@ var io = require('socket.io')(http); // connect websocket library to server
 
 // check to make sure that the user provides the serial port for the Arduino
 // when running the server
-if (!process.argv[2]) {
-	console.error('Usage: node ' + process.argv[1] + ' SERIAL_PORT');
-	process.exit(1);
+if(USE_SERIAL) {
+	if (!process.argv[2]) {
+		console.error('Usage: node ' + process.argv[1] + ' SERIAL_PORT');
+		process.exit(1);
+	}
 }
 
 var serverPort = 8000;
@@ -30,23 +34,27 @@ var BOARD_WIDTH = 3;
 var BOARD_HEIGHT = 3;
 var currentCross = true;
 
-//---------------------- SERIAL COMMUNICATION (Arduino) ----------------------//
+if(USE_SERIAL) {
+	//---------------------- SERIAL COMMUNICATION (Arduino) ----------------------//
 // start the serial port connection and read on newlines
-const serial = new SerialPort(process.argv[2], {});
-const parser = new Readline({
-	delimiter: '\r\n'
-});
+	const serial = new SerialPort(process.argv[2], {});
+	const parser = new Readline({
+		delimiter: '\r\n'
+	});
 
-// Read data that is available on the serial port and send it to the websocket
-serial.pipe(parser);
-parser.on('data', function(data) {
-	console.log('Data:', data);
-	io.emit('server-msg', data);
-	if(data == "light") {
+	// Read data that is available on the serial port and send it to the websocket
+	serial.pipe(parser);
+	parser.on('data', function(data) {
+		console.log('Data:', data);
+		io.emit('server-msg', data);
+		if(data == "light") {
 
-		console.log('ledON');
-	}
-});
+			console.log('ledON');
+		}
+	});
+}
+
+
 
 //---------------------- WEBAPP SERVER SETUP ---------------------------------//
 // use express to create the simple webapp
@@ -79,17 +87,36 @@ io.on('connect', function(socket) {
 		action(data, socket); // run the bot function with the new message
 	});
 
+	socket.on('reset_pressed', (data) => { // If we get a new message from the client we process it;
+		console.log(data + " " + socket.username);
+		resetState(socket);
+	});
+
 	socket.on('disconnect', function() { // This function  gets called when the browser window gets closed
 		console.log('user disconnected');
 		current--;
 	});
 });
 
+function resetState(socket) {
+	gameState = 0;
+	game = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+	currentX = 0;
+	currentY = 0;
+	currentCross = true;
+
+	printGame();
+
+	var next = -1;
+	io.sockets.emit("turn_changed", {next:next, currentCross:currentCross}) ;
+
+}
+
 function action(data, socket) {
 	if (data == "play") {
 		ticTak(data, socket);
 		var next = socket.id;
-		io.sockets.emit("turn_changed", next) ;
+		io.sockets.emit("turn_changed", {next:next, currentCross:currentCross}) ;
 	}
 	else {
 		updateCurrentPos(data, socket);
@@ -224,7 +251,7 @@ function checkAllDiagonals() {
 function resetGame() {
 	currentX = 0;
 	currentY = 0;
-
+	currentCross = true;
 	game = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
@@ -235,6 +262,6 @@ function printGame() {
 		if(game[i] == -1) game_temp[i] = 2;
 		else game_temp[i] = game[i];
 	}
-
-	serial.write(game_temp.toString() + "\n");
+	if(USE_SERIAL)
+		serial.write(game_temp.toString() + "\n");
 }
