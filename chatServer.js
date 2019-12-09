@@ -8,7 +8,7 @@ var express = require('express'); // web server application
 var app = express(); // webapp
 var http = require('http').Server(app); // connects http library to server
 
-var USE_SERIAL = false;
+var USE_SERIAL = true;
 
 var SerialPort = require('serialport');
 var Readline = SerialPort.parsers.Readline; // read serial data as lines
