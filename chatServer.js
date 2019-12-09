@@ -8,8 +8,6 @@ var express = require('express'); // web server application
 var app = express(); // webapp
 var http = require('http').Server(app); // connects http library to server
 
-var USE_SERIAL = true;
-
 var SerialPort = require('serialport');
 var Readline = SerialPort.parsers.Readline; // read serial data as lines
 
@@ -17,12 +15,11 @@ var io = require('socket.io')(http); // connect websocket library to server
 
 // check to make sure that the user provides the serial port for the Arduino
 // when running the server
-if(USE_SERIAL) {
 	if (!process.argv[2]) {
 		console.error('Usage: node ' + process.argv[1] + ' SERIAL_PORT');
 		process.exit(1);
 	}
-}
+
 
 var serverPort = 8000;
 current = 0;
@@ -34,7 +31,7 @@ var BOARD_WIDTH = 3;
 var BOARD_HEIGHT = 3;
 var currentCross = true;
 
-if(USE_SERIAL) {
+
 	//---------------------- SERIAL COMMUNICATION (Arduino) ----------------------//
 // start the serial port connection and read on newlines
 	const serial = new SerialPort(process.argv[2], {});
@@ -52,7 +49,7 @@ if(USE_SERIAL) {
 			console.log('ledON');
 		}
 	});
-}
+
 
 
 
@@ -262,6 +259,6 @@ function printGame() {
 		if(game[i] == -1) game_temp[i] = 2;
 		else game_temp[i] = game[i];
 	}
-	if(USE_SERIAL)
-		serial.write(game_temp.toString() + "\n");
+
+	serial.write(game_temp.toString() + "\n");
 }
